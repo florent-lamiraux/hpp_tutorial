@@ -76,7 +76,7 @@ install(
         urdf/cup.urdf
         urdf/door.urdf
         urdf/kitchen_area.urdf
-	      urdf/kitchen_area_obstacle.urdf
+        urdf/kitchen_area_obstacle.urdf
         urdf/box_color.urdf
         urdf/rod.urdf
         urdf/table.urdf
