@@ -2,38 +2,33 @@
   description = "Tutorial for humanoid path planner platform";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/refs/pull/362956/head";
-    flake-parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs";
-    };
+    gepetto.url = "github:gepetto/nix";
+    flake-parts.follows = "gepetto/flake-parts";
+    nixpkgs.follows = "gepetto/nixpkgs";
+    nix-ros-overlay.follows = "gepetto/nix-ros-overlay";
+    systems.follows = "gepetto/systems";
+    treefmt-nix.follows = "gepetto/treefmt-nix";
   };
 
   outputs =
-    inputs@{ flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ ];
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "aarch64-darwin"
-        "x86_64-darwin"
-      ];
+    inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = import inputs.systems;
+      imports = [ inputs.gepetto.flakeModule ];
       perSystem =
         {
-          self',
+          lib,
           pkgs,
-          system,
+          self',
           ...
         }:
         {
-          devShells.default = pkgs.mkShell { inputsFrom = [ self'.packages.default ]; };
           packages = {
             default = self'.packages.hpp-tutorial;
-            hpp-tutorial = pkgs.python3Packages.hpp-tutorial.overrideAttrs (_: {
-              src = pkgs.lib.fileset.toSource {
+            hpp-tutorial = pkgs.python3Packages.hpp-tutorial.overrideAttrs {
+              src = lib.fileset.toSource {
                 root = ./.;
-                fileset = pkgs.lib.fileset.unions [
+                fileset = lib.fileset.unions [
                   ./CMakeLists.txt
                   ./doc
                   ./include
@@ -47,7 +42,7 @@
                   ./urdf
                 ];
               };
-            });
+            };
           };
         };
     };
