@@ -1,3 +1,5 @@
+from hpp.gepetto.manipulation import ViewerFactory
+
 from hpp.corbaserver import loadServerPlugin
 from hpp.corbaserver import wrap_delete as wd
 from hpp.corbaserver.manipulation import (
@@ -7,7 +9,6 @@ from hpp.corbaserver.manipulation import (
     Robot,
     newProblem,
 )
-from hpp.gepetto.manipulation import ViewerFactory
 
 # Specify path for robot urdf and srdf files
 Robot.urdfFilename = (

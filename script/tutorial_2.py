@@ -1,6 +1,7 @@
+from hpp.gepetto import ViewerFactory
+
 from hpp.corbaserver import ProblemSolver
 from hpp.corbaserver.pr2 import Robot
-from hpp.gepetto import ViewerFactory
 
 robot = Robot("pr2")
 robot.setJointBounds("root_joint", [-4, -3, -5, -3])
