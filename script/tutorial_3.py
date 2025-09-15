@@ -3,6 +3,9 @@
 # Import.
 from math import sqrt
 
+from hpp.gepetto import PathPlayer  # noqa: F401
+from hpp.gepetto.manipulation import ViewerFactory
+
 from hpp.corbaserver import loadServerPlugin
 from hpp.corbaserver.manipulation import (
     Client,
@@ -13,8 +16,6 @@ from hpp.corbaserver.manipulation import (
     Rule,
 )
 from hpp.corbaserver.manipulation.pr2 import Robot
-from hpp.gepetto import PathPlayer  # noqa: F401
-from hpp.gepetto.manipulation import ViewerFactory
 
 loadServerPlugin("corbaserver", "manipulation-corba.so")
 Client().problem.resetProblem()
