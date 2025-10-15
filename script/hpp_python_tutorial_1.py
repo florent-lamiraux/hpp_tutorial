@@ -66,7 +66,7 @@ viewer = Viewer(robot)
 problem = Problem(robot)
 problem.initConfig(q_init)
 problem.addGoalConfig(q_goal)
-viewer.display(q_init)
+viewer(q_init)
 
 diffusingPlanner = DiffusingPlanner(problem)
 
