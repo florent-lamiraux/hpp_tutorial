@@ -1,18 +1,17 @@
 import numpy as np
 from pinocchio import SE3
-from pyhpp.core import DiffusingPlanner, Problem
-from pyhpp.gepetto import Viewer
-from pyhpp.pinocchio import Device
+from pyhpp.core import DiffusingPlanner, Problem, RandomShortcut
+from pyhpp.pinocchio import Device, urdf
+from pyhpp.viser import Viewer
 
 urdfFilename = "package://example-robot-data/robots/pr2_description/urdf/pr2.urdf"
 srdfFilename = "package://example-robot-data/robots/pr2_description/srdf/pr2.srdf"
 rootJointType = "planar"
 # Initialize robot and viewer
-robot = Device.create("ur2")
-viewer = Viewer("tutorial_1", robot)
+robot = Device("ur2")
 
-viewer.addURDFToScene(
-    0, "r0", rootJointType, urdfFilename, srdfFilename, SE3.Identity()
+urdf.loadModel(
+    robot, 0, "r0", rootJointType, urdfFilename, srdfFilename, SE3.Identity()
 )
 
 # Define initial and goal configurations
@@ -25,7 +24,7 @@ lowerLimit = model.lowerPositionLimit
 upperLimit = model.upperPositionLimit
 
 # Set root_joint bounds specifically
-root_joint_bounds = [-4, -3, -5, -3]  # [x_lower, x_upper, y_lower, y_upper]
+root_joint_bounds = [-4, -3, -5, -3]
 ij = model.getJointId("r0/root_joint")
 iq = model.idx_qs[ij]
 
@@ -58,18 +57,29 @@ q_goal[rank] = 0.5
 rank = rankInConfiguration["r_elbow_flex_joint"]
 q_goal[rank] = -0.5
 
-viewer.addURDFObstacleToScene(
-    "package://hpp_tutorial/urdf/kitchen_area_obstacle.urdf", "kitchen"
+urdf.loadModel(
+    robot,
+    0,
+    "kitchen_area",
+    "anchor",
+    "package://hpp_tutorial/urdf/kitchen_area_obstacle.urdf",
+    "",
+    SE3.Identity(),
 )
 
-viewer.applyConfiguration(q_goal)
-
-# Setup problem and RRT components
 problem = Problem(robot)
 problem.initConfig(q_init)
 problem.addGoalConfig(q_goal)
 
 diffusingPlanner = DiffusingPlanner(problem)
 
+path_optimizer = RandomShortcut(problem)
 path = diffusingPlanner.solve()
-viewer.displayPath(path)
+opt_path = path_optimizer.optimize(path)
+
+# launch in interactive mode to use viewer
+viewer = Viewer(robot)
+viewer.initViewer(open=True, loadModel=True)
+viewer(np.array(q_init))
+viewer.loadPath(path, "path")
+viewer.loadPath(opt_path, "opt_path")
