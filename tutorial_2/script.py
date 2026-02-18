@@ -1,5 +1,5 @@
 from pinocchio import neutral, SE3
-from pyhpp.manipulation import (Device, Problem, urdf)
+from pyhpp.manipulation import (Device, urdf)
 from pyhpp_viser import Viewer
 
 robot = Device("tuto")
@@ -13,5 +13,3 @@ urdf.loadModel(robot, 0, "panda", "anchor", urdf_filename, srdf_filename, SE3.Id
 q = neutral(robot.model())
 # Open the gripper
 q[-2:] = [0.035, 0.035]
-
-

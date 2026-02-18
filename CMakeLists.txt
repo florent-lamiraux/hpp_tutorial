@@ -49,7 +49,7 @@ include("${JRL_CMAKE_MODULES}/python.cmake")
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
 
-add_project_dependency("hpp-manipulation-corba" REQUIRED)
+add_project_dependency("hpp-manipulation" REQUIRED)
 add_project_dependency("example-robot-data" REQUIRED)
 add_project_dependency("hpp-gepetto-viewer" REQUIRED)
 
@@ -57,35 +57,15 @@ if(NOT FINDPYTHON_ALREADY_CALLED)
   findpython()
 endif()
 
-add_subdirectory(src)
-
 set(CATKIN_PACKAGE_SHARE_DESTINATION
     ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
 
-install(
-  FILES urdf/box.urdf
-        urdf/cup.urdf
-        urdf/door.urdf
-        urdf/kitchen_area.urdf
-        urdf/kitchen_area_obstacle.urdf
-        urdf/box_color.urdf
-        urdf/rod.urdf
-        urdf/table.urdf
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/urdf)
-install(FILES srdf/box.srdf srdf/cup.srdf srdf/kitchen_area.srdf srdf/rod.srdf
-              srdf/door.srdf srdf/table.srdf
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/srdf)
+install(DIRECTORY urdf
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY srdf
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(FILES meshes/box.dae
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/meshes)
-install(FILES src/hpp/corbaserver/pr2/robot.py
-              src/hpp/corbaserver/pr2/__init__.py
-        DESTINATION ${PYTHON_SITELIB}/hpp/corbaserver/pr2)
-install(FILES src/hpp/corbaserver/rod/robot.py
-              src/hpp/corbaserver/rod/__init__.py
-        DESTINATION ${PYTHON_SITELIB}/hpp/corbaserver/rod)
-install(FILES src/hpp/corbaserver/manipulation/pr2/robot.py
-              src/hpp/corbaserver/manipulation/pr2/__init__.py
-        DESTINATION ${PYTHON_SITELIB}/hpp/corbaserver/manipulation/pr2)
 
 install(
   FILES Media/models/meshes/glasses/__Color_A05_4.png
@@ -105,19 +85,6 @@ install(
         Media/materials/textures/sink.png
         Media/materials/textures/mittig_neben_roboterplakat.png
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/Media/materials/textures)
-
-# Installation for documentation
-if(INSTALL_DOCUMENTATION)
-  install(
-    FILES urdf/box.urdf
-    DESTINATION
-      ${CMAKE_INSTALL_DATAROOTDIR}/doc/${PROJECT_NAME}/doxygen-html/urdf)
-  install(
-    FILES script/tutorial_1.py script/tutorial_2.py script/tutorial_3.py
-          script/tutorial_4.py
-    DESTINATION
-      ${CMAKE_INSTALL_DATAROOTDIR}/doc/${PROJECT_NAME}/doxygen-html/script)
-endif(INSTALL_DOCUMENTATION)
 
 add_library(${PROJECT_NAME} INTERFACE)
 install(
