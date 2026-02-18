@@ -1,14 +1,14 @@
 import numpy as np
 from pinocchio import SE3
-from pyhpp.core import DiffusingPlanner, Problem
-from pyhpp.gepetto import Viewer
+from pyhpp.core import DiffusingPlanner, Problem, RandomShortcut
+from pyhpp.viser import Viewer
 from pyhpp.pinocchio import Device, urdf
 
 urdfFilename = "package://example-robot-data/robots/pr2_description/urdf/pr2.urdf"
 srdfFilename = "package://example-robot-data/robots/pr2_description/srdf/pr2.srdf"
 rootJointType = "planar"
 # Initialize robot and viewer
-robot = Device.create("ur2")
+robot = Device("ur2")
 
 urdf.loadModel(
     robot, 0, "r0", rootJointType, urdfFilename, srdfFilename, SE3.Identity()
@@ -61,14 +61,19 @@ urdf.loadModel(
     robot, 0, "kitchen_area", "anchor", "package://hpp_tutorial/urdf/kitchen_area_obstacle.urdf", "", SE3.Identity()
 )
 
-viewer = Viewer(robot)
-
 problem = Problem(robot)
 problem.initConfig(q_init)
 problem.addGoalConfig(q_goal)
-viewer(q_init)
 
 diffusingPlanner = DiffusingPlanner(problem)
 
+path_optimizer = RandomShortcut(problem)
 path = diffusingPlanner.solve()
-viewer.playPath(path)
+opt_path = path_optimizer.optimize(path)
+
+#launch in interactive mode to use viewer
+viewer = Viewer(robot)
+viewer.initViewer(open=True, loadModel=True)
+viewer(np.array(q_init))
+viewer.loadPath(path, "path")
+viewer.loadPath(opt_path, "opt_path")
