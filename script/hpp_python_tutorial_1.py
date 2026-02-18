@@ -1,8 +1,8 @@
 import numpy as np
 from pinocchio import SE3
 from pyhpp.core import DiffusingPlanner, Problem, RandomShortcut
-from pyhpp.viser import Viewer
 from pyhpp.pinocchio import Device, urdf
+from pyhpp.viser import Viewer
 
 urdfFilename = "package://example-robot-data/robots/pr2_description/urdf/pr2.urdf"
 srdfFilename = "package://example-robot-data/robots/pr2_description/srdf/pr2.srdf"
@@ -58,7 +58,13 @@ rank = rankInConfiguration["r_elbow_flex_joint"]
 q_goal[rank] = -0.5
 
 urdf.loadModel(
-    robot, 0, "kitchen_area", "anchor", "package://hpp_tutorial/urdf/kitchen_area_obstacle.urdf", "", SE3.Identity()
+    robot,
+    0,
+    "kitchen_area",
+    "anchor",
+    "package://hpp_tutorial/urdf/kitchen_area_obstacle.urdf",
+    "",
+    SE3.Identity(),
 )
 
 problem = Problem(robot)
@@ -71,7 +77,7 @@ path_optimizer = RandomShortcut(problem)
 path = diffusingPlanner.solve()
 opt_path = path_optimizer.optimize(path)
 
-#launch in interactive mode to use viewer
+# launch in interactive mode to use viewer
 viewer = Viewer(robot)
 viewer.initViewer(open=True, loadModel=True)
 viewer(np.array(q_init))
