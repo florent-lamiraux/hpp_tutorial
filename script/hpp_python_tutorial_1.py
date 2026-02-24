@@ -2,7 +2,7 @@ import numpy as np
 from pinocchio import SE3
 from pyhpp.core import DiffusingPlanner, Problem, RandomShortcut
 from pyhpp.pinocchio import Device, urdf
-from pyhpp.viser import Viewer
+from pyhpp_viser import Viewer
 
 urdfFilename = "package://example-robot-data/robots/pr2_description/urdf/pr2.urdf"
 srdfFilename = "package://example-robot-data/robots/pr2_description/srdf/pr2.srdf"
