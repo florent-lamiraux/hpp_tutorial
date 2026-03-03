@@ -64,8 +64,8 @@ install(DIRECTORY urdf
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(DIRECTORY srdf
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-install(FILES meshes/box.dae
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/meshes)
+install(DIRECTORY meshes
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(
   FILES Media/models/meshes/glasses/__Color_A05_4.png
