@@ -13,20 +13,14 @@
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
-      imports = [ inputs.gepetto.flakeModule ];
-      perSystem =
-        {
-          lib,
-          pkgs,
-          self',
-          ...
-        }:
-        {
-          packages = {
-            default = self'.packages.hpp-tutorial;
-            hpp-tutorial = pkgs.python3Packages.hpp-tutorial.overrideAttrs {
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
+      { lib, ... }:
+      {
+        systems = import inputs.systems;
+        imports = [
+          inputs.gepetto.flakeModule
+          {
+            gazebros2nix.overrides.hpp-tutorial = _final: {
               src = lib.fileset.toSource {
                 root = ./.;
                 fileset = lib.fileset.unions [
@@ -44,7 +38,8 @@
                 ];
               };
             };
-          };
-        };
-    };
+          }
+        ];
+      }
+    );
 }
