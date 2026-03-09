@@ -57,6 +57,14 @@ hpp-plot_branch=robotics-principia
 hpp-plot_repository=${FLORENT_REPO}
 hpp-plot_extra_flags=  -DINSTALL_DOCUMENTATION=OFF
 
+hpp-manipulation_branch=v7.0.0
+hpp-manipulation_repository=${HPP_REPO}
+hpp-manipulation_extra_flags=
+
+hpp-manipulation-urdf_branch=v7.0.0
+hpp-manipulation-urdf_repository=${HPP_REPO}
+hpp-manipulation-urdf_extra_flags=
+
 # }}}
 ##################################
 # {{{ Packages for gepetto-gui
@@ -90,12 +98,16 @@ python-venv:
 
 jrl-cmakemodules.configure.dep: jrl-cmakemodules.checkout
 hpp-doc.configure.dep: hpp-doc.checkout
-hpp-plot.configure.dep: hpp-plot.checkout jrl-cmakemodules.install qgv.install
-hpp-python.configure.dep: hpp-python.checkout jrl-cmakemodules.install
+hpp-plot.configure.dep: hpp-plot.checkout jrl-cmakemodules.install qgv.install \
+	hpp-manipulation.install
+hpp-python.configure.dep: hpp-python.checkout jrl-cmakemodules.install \
+	hpp-manipulation-urdf.install
 qgv.configure.dep: qgv.checkout jrl-cmakemodules.install
 hpp_tutorial.configure.dep: hpp_tutorial.checkout hpp-gepetto-viewer.install \
 	hpp-python.install
 hpp-gepetto-viewer.configure.dep: hpp-gepetto-viewer.checkout python-venv hpp-python.install
+hpp-manipulation-urdf.configure.dep: hpp-manipulation-urdf.checkout
+hpp-manipulation.configure.dep: hpp-manipulation.checkout hpp-manipulation.install
 
 # }}}
 ##################################
