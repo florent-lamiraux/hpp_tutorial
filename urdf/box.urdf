@@ -10,16 +10,16 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.03 0.05 0.05"/>
+        <box size="0.05 0.05 0.05"/>
       </geometry>
-      <material name="white">
-        <color rgba="1 1 1 1"/>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.03 0.05 0.05"/>
+        <box size="0.05 0.05 0.05"/>
       </geometry>
     </collision>
   </link>
