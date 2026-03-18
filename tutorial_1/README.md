@@ -22,7 +22,7 @@ wget https://raw.githubusercontent.com/florent-lamiraux/hpp_tutorial/refs/heads/
 ```
 wget https://github.com/goastian/midori-desktop/releases/download/v11.6/midori_11.6-1_amd64.deb
 ```
-  
+
   4. Build the docker image
 
 ```
