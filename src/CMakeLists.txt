@@ -25,4 +25,5 @@ install(TARGETS hpp-tutorial-1 DESTINATION ${CMAKE_INSTALL_BINDIR})
 include(${HPP_CORE_CMAKE_PLUGIN})
 # Create and install the plugin
 hpp_add_plugin(tutorial-2 SOURCES tutorial_2.cc LINK_DEPENDENCIES
-               hpp-corbaserver::hpp-corbaserver)
+               hpp-corbaserver::hpp-corbaserver
+)
