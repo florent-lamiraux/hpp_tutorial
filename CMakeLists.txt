@@ -23,24 +23,32 @@ set(CXX_DISABLE_WERROR TRUE)
 # Check if the submodule cmake have been initialized
 set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
 if(EXISTS "${JRL_CMAKE_MODULES}/base.cmake")
-  message(STATUS "JRL cmakemodules found in 'cmake/' git submodule")
+    message(STATUS "JRL cmakemodules found in 'cmake/' git submodule")
 else()
-  find_package(jrl-cmakemodules QUIET CONFIG)
-  if(jrl-cmakemodules_FOUND)
-    get_property(
-      JRL_CMAKE_MODULES
-      TARGET jrl-cmakemodules::jrl-cmakemodules
-      PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-    message(STATUS "JRL cmakemodules found on system at ${JRL_CMAKE_MODULES}")
-  else()
-    message(STATUS "JRL cmakemodules not found. Let's fetch it.")
-    include(FetchContent)
-    FetchContent_Declare(
-      "jrl-cmakemodules"
-      GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git")
-    FetchContent_MakeAvailable("jrl-cmakemodules")
-    FetchContent_GetProperties("jrl-cmakemodules" SOURCE_DIR JRL_CMAKE_MODULES)
-  endif()
+    find_package(jrl-cmakemodules QUIET CONFIG)
+    if(jrl-cmakemodules_FOUND)
+        get_property(
+            JRL_CMAKE_MODULES
+            TARGET jrl-cmakemodules::jrl-cmakemodules
+            PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        )
+        message(
+            STATUS
+            "JRL cmakemodules found on system at ${JRL_CMAKE_MODULES}"
+        )
+    else()
+        message(STATUS "JRL cmakemodules not found. Let's fetch it.")
+        include(FetchContent)
+        FetchContent_Declare(
+            "jrl-cmakemodules"
+            GIT_REPOSITORY "https://github.com/jrl-umi3218/jrl-cmakemodules.git"
+        )
+        FetchContent_MakeAvailable("jrl-cmakemodules")
+        FetchContent_GetProperties(
+            "jrl-cmakemodules"
+            SOURCE_DIR JRL_CMAKE_MODULES
+        )
+    endif()
 endif()
 
 include("${JRL_CMAKE_MODULES}/hpp.cmake")
@@ -54,22 +62,25 @@ add_project_dependency("example-robot-data" REQUIRED)
 add_project_dependency("hpp-gepetto-viewer" REQUIRED)
 
 if(NOT FINDPYTHON_ALREADY_CALLED)
-  findpython()
+    findpython()
 endif()
 
 set(CATKIN_PACKAGE_SHARE_DESTINATION
-    ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
+    ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}
+)
 
 install(DIRECTORY urdf DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(DIRECTORY srdf DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(DIRECTORY meshes DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(
-  FILES Media/models/meshes/glasses/__Color_A05_4.png
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/Media/models/meshes/glasses)
+    FILES Media/models/meshes/glasses/__Color_A05_4.png
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/Media/models/meshes/glasses
+)
 
 install(
-  FILES Media/materials/textures/ganz_rechts_neben_kuecheninsel.png
+    FILES
+        Media/materials/textures/ganz_rechts_neben_kuecheninsel.png
         Media/materials/textures/hinter_shopschraenken_an_saeule.png
         Media/materials/textures/wallpaper_ai_unihb.png
         Media/materials/textures/stove.png
@@ -81,10 +92,8 @@ install(
         Media/materials/textures/wallpaper.png
         Media/materials/textures/sink.png
         Media/materials/textures/mittig_neben_roboterplakat.png
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/Media/materials/textures)
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/Media/materials/textures
+)
 
 add_library(${PROJECT_NAME} INTERFACE)
-install(
-  TARGETS ${PROJECT_NAME}
-  EXPORT ${TARGETS_EXPORT_NAME}
-  DESTINATION lib)
+install(TARGETS ${PROJECT_NAME} EXPORT ${TARGETS_EXPORT_NAME} DESTINATION lib)
