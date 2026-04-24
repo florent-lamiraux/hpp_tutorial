@@ -38,6 +38,10 @@ HPP_EXTRA_FLAGS= -DBUILD_TESTING=${BUILD_TESTING}
 jrl-cmakemodules_branch=master
 jrl-cmakemodules_repository=${JRL_REPO}
 
+hpp-constraints_branch=devel
+hpp-constraints_repository=${HPP_REPO}
+hpp-constraints_extra_flags=${HPP_EXTRA_FLAGS}
+
 hpp-core_branch=devel
 hpp-core_repository=${HPP_REPO}
 hpp-core_extra_flags=${HPP_EXTRA_FLAGS}
@@ -94,30 +98,20 @@ all: hpp-plot.install hpp_tutorial.install hpp-toppra.install
 
 # }}}
 ##################################
-# {{{ python virtual environment
-python-venv:
-	if [ -f ${INSTALL_HPP_DIR}/pyvenv.cfg ]; then \
-		echo "python virtual environment already created in $INSTALL_HPP_DIR"; \
-	else \
-		python -m venv --system-site-packages ${INSTALL_HPP_DIR}; \
-		${INSTALL_HPP_DIR}/bin/pip install --prefix=${INSTALL_HPP_DIR} \
-			"numpy==1.26.4" trimesh pycollada viser; \
-	fi
-
-# }}}
-##################################
 # {{{ Dependencies declaration
 
 jrl-cmakemodules.configure.dep: jrl-cmakemodules.checkout
 hpp-doc.configure.dep: hpp-doc.checkout
-hpp-core.configure.dep: hpp-core.checkout jrl-cmakemodules.install
+hpp-constraints.configure.dep: hpp-constraints.checkout
+hpp-core.configure.dep: hpp-core.checkout jrl-cmakemodules.install \
+	hpp-constraints.install
 hpp-manipulation.configure.dep: hpp-manipulation.checkout hpp-core.install
 hpp-manipulation-urdf.configure.dep: hpp-manipulation-urdf.checkout hpp-manipulation.install
 hpp-python.configure.dep: hpp-python.checkout jrl-cmakemodules.install hpp-manipulation-urdf.install
 hpp-plot.configure.dep: hpp-plot.checkout jrl-cmakemodules.install hpp-manipulation.install
 hpp_tutorial.configure.dep: hpp_tutorial.checkout hpp-gepetto-viewer.install \
 	hpp-python.install
-hpp-gepetto-viewer.configure.dep: hpp-gepetto-viewer.checkout python-venv hpp-python.install
+hpp-gepetto-viewer.configure.dep: hpp-gepetto-viewer.checkout hpp-python.install
 toppra.configure.dep: toppra.checkout
 hpp-toppra.configure.dep: hpp-toppra.checkout jrl-cmakemodules.install toppra.install
 hpp-exec.configure.dep: hpp-exec.checkout jrl-cmakemodules.install

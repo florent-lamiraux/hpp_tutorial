@@ -52,6 +52,4 @@ RUN . /opt/ros/jazzy/setup.sh \
         franka_gazebo_bringup \
     --cmake-args -DCMAKE_BUILD_TYPE=Release
 
-RUN echo 'source /opt/franka_ws/install/setup.bash 2>/dev/null' >> /home/user/.bashrc
-
 WORKDIR /home/user/devel
