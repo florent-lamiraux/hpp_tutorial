@@ -32,8 +32,9 @@ RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -qqy \
 WORKDIR /opt/franka_ws
 RUN mkdir -p src \
     && cd src \
-    && git clone --depth 1 https://github.com/frankarobotics/franka_description.git \
-    && git clone --branch jazzy --depth 1 https://github.com/frankarobotics/franka_ros2.git
+    && git clone --recursive https://github.com/agimus-project/agimus-libfranka.git \
+    && git clone --depth 1 https://github.com/agimus-project/agimus-franka-description.git \
+    && git clone --depth 1 https://github.com/agimus-project/agimus-franka-ros2.git
 
 RUN apt-get update && apt-get install -y python3-rosdep \
     && (rosdep init 2>/dev/null || true) \
@@ -47,9 +48,6 @@ RUN chown -R user:user /opt/franka_ws
 USER user
 
 RUN . /opt/ros/jazzy/setup.sh \
-    && colcon build --packages-up-to \
-        franka_description \
-        franka_gazebo_bringup \
-    --cmake-args -DCMAKE_BUILD_TYPE=Release
+    && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF
 
 WORKDIR /home/user/devel
