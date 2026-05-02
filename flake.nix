@@ -15,6 +15,7 @@
               ./CMakeLists.txt
               ./doc
               ./include
+              ./launch
               ./Media
               ./meshes
               ./package.xml
@@ -22,6 +23,8 @@
               ./script
               ./src
               ./srdf
+              ./tutorial_6
+              ./tutorial_7
               ./urdf
             ];
           };
