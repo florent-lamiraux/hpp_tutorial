@@ -15,6 +15,7 @@
               ./CMakeLists.txt
               ./doc
               ./include
+              ./launch
               ./Media
               ./meshes
               ./package.xml
