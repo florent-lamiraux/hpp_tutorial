@@ -59,7 +59,8 @@ TOPPRA (Time-Optimal Path Parameterization based on Reachability Analysis) compu
 time-optimal parameterization subject to velocity, acceleration, and torque constraints. Applied
 directly to the raw path `p1`, TOPPRA produces endpoint velocity discontinuities and an
 acceleration spike at the start. Applied after `SplineGradientBased_bezier3`, the smoothed
-spline eliminates these and keeps accelerations bounded throughout.
+spline eliminates these and keeps accelerations bounded throughout. Note that the acceleration
+bounds apply only on selected joints. Below, we select only the robot joints.
 
 ```python
 import numpy as np
@@ -69,7 +70,8 @@ toppra = Toppra(problem)
 toppra.velocityScale = 0.5
 toppra.effortScale = -1
 toppra.N = 100
-toppra.accelerationLimits = np.array(12 * [0.5])
+toppra.selectJoints([f"staubli/joint_{i}" for i in range(1,7)])
+toppra.accelerationLimits = np.array(6 * [0.5])
 p3 = toppra.optimize(p2)
 print(f"TOPPRA duration: {p3.length():.3f} s")
 ```
@@ -81,17 +83,15 @@ Parameters:
   constraints. **Note**: torque constraints require mass and inertia data in the robot URDF. The
   Staubli model has no dynamics data, so `effortScale` must be set to `-1` (disabled).
 - `accelerationLimits`: per-DOF acceleration cap. The vector size must match the problem's
-  **velocity** dimension, not the configuration size — here it is `12` (6-DOF Staubli arm +
-  6-DOF plate freeflyer). Passing a 7-vector raises
-  `ValueError: Acceleration limits should be of size 12 ...`.
+  **velocity** dimension, not the configuration size — here it is `6` (6-DOF Staubli arm).
 - `N`: minimal number of discretization points along the path.
 - `interpolationMethod`: `"constant_acceleration"` or `"hermite"`.
 - `gridpointMethod`: `"param_space"` or `"time_space"`.
 
-Compare the profiles with and without Bézier smoothing:
+Compare the profiles after Bézier smoothing and after optimal time parameterization:
 
 ```python
-fig = plotTraj(p3, 0, 7, order=2)
+fig = plotTraj(p2, 0, 7, order=2)
 fig.show()
 fig = plotTraj(p3, 0, 7, order=2)
 fig.show()
