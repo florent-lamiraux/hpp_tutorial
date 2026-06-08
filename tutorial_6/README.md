@@ -7,7 +7,7 @@ Having completed [tutorial 5](../tutorial_5/README.md).
 ## Overview
 
 This tutorial shows how to set up an RViz2 visualization for HPP using the `RVizVisualizer`
-from `pyhpp_viser`. Unlike the web-based viewer used in tutorials 2–5, this visualizer
+from `pyhpp_rviz`. Unlike the web-based viewer used in tutorials 2–5, this visualizer
 communicates over ROS 2 topics and displays the robot, paths, and waypoints directly inside
 RViz2.
 
@@ -46,7 +46,7 @@ make hpp-gepetto-viewer_extra_flags="\
     && make hpp-gepetto-viewer.install
 ```
 
-export the package path 
+export the package path
 
 ```
 export ROS_PACKAGE_PATH=/home/user/devel/src/:$ROS_PACKAGE_PATH
@@ -85,9 +85,9 @@ Add a **TF** display to visualize all frame transforms published by the viewer.
 
 Disable TF arrows and put Frame Time Out to 1e+07
 
-There is a rviz config file on hpp_tutorial/launch/tuto6.rviz 
+There is a rviz config file on hpp_tutorial/launch/tuto6.rviz
 ```bash
-rviz2 -d hpp_tutorial/launch/tuto6.rviz 
+rviz2 -d hpp_tutorial/launch/tuto6.rviz
 ```
 
 Call `v(q_init)` in the Python terminal to place all objects in their initial configuration.
@@ -123,7 +123,7 @@ Add the **DisplayWaypoint** display to visualize the waypoints in the scene.
 Waypoints can be placed in three ways:
 
 - **Interactively**: select the Waypoint tool in the toolbar, then click in the 3D view.
-Drtag the waypoint ith the interact toll for moving it or 
+  Drag the waypoint with the interact tool for moving it or
   Right-click a waypoint marker and choose *Edit position* to adjust it numerically with the intrect tool too
 
 - **From a named frame** (Python):

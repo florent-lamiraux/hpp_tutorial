@@ -17,6 +17,8 @@ from pyhpp_rviz import RVizVisualizer
 
 from pyhpp.manipulation import RandomShortcut
 from pyhpp.core import PathOptimizer
+
+
 def display():
     v = RVizVisualizer()
     v.initViewer(robot)
@@ -167,12 +169,6 @@ for i in range(50):
     res, p2_valid, report = pv2.validate(p2_raw, False)
     if not res:
         continue
-
-    print("p1 length:", p1.length())
-    for i in range(20):
-        optimizer = RandomShortcut(problem)
-        p1 = optimizer.optimize(p1)
-    print("p1 length after random shortcut:", p1.length())
 
     # Smooth p1 with cubic Bézier spline (tutorial 5)
     bezier = SplineGradientBased_bezier3(problem)
