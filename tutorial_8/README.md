@@ -1,4 +1,4 @@
-# A more efficient way to assign pre or post-actions
+# Pick and place with gripper, introducing pre and post-actions
 
 ## Prerequisite
 
@@ -6,13 +6,13 @@ Having completed [tutorial 7](../tutorial_7/README.md).
 
 ## Overview
 
-Tutorial 7 opens the gripper as a blocking pre-action before the approach
-motion. This tutorial uses `hpp_exec.BackgroundAction` to start opening the
-gripper in the background, let the arm begin travelling, then wait for the
-opening action just before grasping the box.
+Tutorial 6 executed one arm trajectory with `send_trajectory`. This tutorial
+adds the gripper: the robot must open the fingers before approaching the box,
+close them before transport, then open them again at the goal.
 
-The planning problem, Gazebo setup, and pick-and-place path are the same as in
-tutorial 7. Only the execution actions change.
+The script plans a pick-and-place path with an HPP manipulation constraint
+graph. We then use `hpp_exec` to expose the graph segments, attach the Gazebo
+actions for this problem, and execute the segments.
 
 For the full `hpp_exec` API, see the
 [hpp-exec documentation](https://gepetto.github.io/doc/hpp-exec/doxygen-html/index.html).
@@ -24,7 +24,7 @@ built it yet, see the [tutorial 6 instructions](../tutorial_6/README.md).
 
 ## Terminal 1: Launching the simulation
 
-Launch the same FR3 and gripper simulation as tutorial 7:
+Launch Gazebo with the FR3 and its gripper:
 
 ```
 ros2 launch hpp_tutorial tutorial_7_launch.py
@@ -46,13 +46,15 @@ docker exec -it hpp bash
 Run the tutorial script:
 
 ```
-cd ~/devel/src/hpp_tutorial/tutorial_8
+cd ~/devel/src/hpp_tutorial/tutorial_7
 python -i init.py
 ```
 
-The script loads the FR3, the ground, and a box. It solves the same
-pick-and-place problem as tutorial 7, optimizes the path, enforces transition
-semantics, and time-parameterizes it with `SimpleTimeParameterization`.
+The script loads the FR3, the ground, and a box. It solves a pick-and-place
+problem that moves the box from `(0.4, -0.2)` to `(0.4, 0.2)`, optimizes the
+path, time-parameterizes it with `SimpleTimeParameterization`.
+
+Note that between optimization and time parameterization, an object called `EnforceTransitionSemantic` is called. This steps labels each sub-path with the transition of the graph the sub-path belongs to. This step is necessary before executing the path in order to place pre-actions and post-actions at the right times.
 
 You can visualize the planned path in the browser viewer:
 
@@ -61,18 +63,77 @@ v = display()
 v.loadPath(p_timed)
 ```
 
+## Defining gripper actions
+
+Create the actions that will be called during execution:
+
+```python
+from hpp_exec import send_trajectory
+
+
+def attach_box():
+    attach_pub.publish(Empty())
+    rclpy.spin_once(gazebo_node, timeout_sec=0.05)
+    time.sleep(0.2)
+    gazebo_node.get_logger().info("Published '/box/attach' on Gazebo topic")
+    return True
+
+
+def detach_box():
+    detach_pub.publish(Empty())
+    rclpy.spin_once(gazebo_node, timeout_sec=0.05)
+    time.sleep(0.2)
+    gazebo_node.get_logger().info("Published '/box/detach' on Gazebo topic")
+    return True
+
+
+def open_gripper():
+    return send_trajectory(
+        [np.array([0.0]), np.array([0.035])],
+        [0.0, 0.5],
+        joint_names=GRIPPER_JOINT_NAMES,
+        controller_topic="/gripper_controller/follow_joint_trajectory",
+    )
+
+
+def close_gripper():
+    return send_trajectory(
+        [np.array([0.035]), np.array([0.0])],
+        [0.0, 0.5],
+        joint_names=GRIPPER_JOINT_NAMES,
+        controller_topic="/gripper_controller/follow_joint_trajectory",
+    )
+
+
+def grasp_box():
+    return attach_box() and close_gripper()
+
+
+def release_box():
+    return open_gripper() and detach_box()
+```
+
+`open_gripper` and `close_gripper` send a reference value for
+`fr3_finger_joint1` to open or close the gripper. They use `send_trajectory`,
+as in `tutorial_6`. On the real robot, this would be performed by a ROS action
+instead.
+
+`grasp_box` and `release_box` call `attach_box` and `detach_box` respectively.
+These functions tell Gazebo that the box is attached to or detached from the
+end effector.
+
+
 At this point the useful objects are:
 
 - `p_timed`: the time-parameterized HPP path.
 - `configs`: sampled HPP configurations along the timed path.
 - `times`: timestamps in seconds, returned by `segments_from_graph`.
-- `segments`: graph segments whose `transition_name` values can be used as
-  action dictionary keys.
+- `segments`: graph segments where you can add pre/post actions.
 - `graph`: the HPP manipulation constraint graph.
 - `open_gripper`, `close_gripper`, `grasp_box`, and `release_box`: Gazebo
   actions for the gripper and simulated box attachment.
 
-## Building execution dictionaries
+## Building execution segments
 
 The planned path contains the approach, transport, and retreat motion in one
 path. Ask `hpp_exec` to sample the timed path and expose the HPP graph
@@ -85,67 +146,35 @@ configs, times, segments = segments_from_graph(p_timed, graph)
 print_segments(segments)
 ```
 
-This tutorial attaches actions by graph transition name. First wrap the opening
-action so it can run while the arm starts moving:
+The table shows the segment times, graph transition names, nominal states,
+observed states, and how many pre/post actions are attached.
+
+Build a transition-name map and attach the actions to the movements used in
+this tutorial:
 
 ```python
-from hpp_exec import BackgroundAction
-
-background_open_gripper = BackgroundAction(open_gripper, name="open_gripper")
-```
-
-Set the transition names where the action dictionaries should apply, then
-check how many path occurrences use each transition:
-
-```python
-APPROACH_TRANSITION = "Loop | f"
 GRASP_TRANSITION = "fr3/gripper > box/handle | f_23"
 RELEASE_TRANSITION = "fr3/gripper < box/handle | 0-0_21"
 
 segments_by_name = segments_by_transition(segments)
+
+segments[0].pre_actions.append(open_gripper)
+for segment in segments_by_name[GRASP_TRANSITION]:
+    segment.pre_actions.append(grasp_box)
+for segment in segments_by_name[RELEASE_TRANSITION]:
+    segment.pre_actions.append(release_box)
+
+print_segments(segments)
 ```
 
-Now fill the pre-action and post-action dictionaries. The keys are exact
-transition names, and the values are callables. A dictionary entry
-applies to every segment with that transition name, so check the printed table
-and the occurrence counts before executing. In this movement, each transition
-used below appears once. If a different movement repeats one of these names,
-the dictionary action would run for every occurrence; use
-`segments_by_name[TRANSITION_NAME][i].pre_actions` when you need to attach an
-action to one chosen occurrence.
-
-```python
-pre_actions_by_transition = {
-    APPROACH_TRANSITION: background_open_gripper.start,
-    GRASP_TRANSITION: [background_open_gripper.wait, grasp_box],
-    RELEASE_TRANSITION: release_box,
-}
-post_actions_by_transition = {}
-```
-
-The resulting schedule is:
-
-| Dictionary | Transition | Action                         | Effect                          |
-|------------|------------|--------------------------------|---------------------------------|
-| pre        | approach   | `background_open_gripper.start` | start opening in the background |
-| pre        | grasp      | `background_open_gripper.wait`  | wait until opening has finished |
-| pre        | grasp      | `grasp_box`                    | attach the box and close fingers |
-| pre        | release    | `release_box`                  | open fingers and detach the box |
-
-Conceptually, execution still has three phases:
+`segments_by_transition` is a dictionary that stores the segments by the transition they belong to. This is very convenient to assign pre or post-actions to each segment.
+Conceptually, execution has three phases:
 
 | # | Phase     | What the arm does           | Action before phase |
 |---|-----------|-----------------------------|---------------------|
-| 0 | approach  | move above the box, descend | start opening       |
-| 1 | transport | carry the box to the goal   | wait, attach, close |
+| 0 | approach  | move above the box, descend | open                |
+| 1 | transport | carry the box to the goal   | attach and close    |
 | 2 | retreat   | lift and return             | open and detach     |
-
-`background_open_gripper.start()` returns immediately, so the arm can begin the
-approach while the gripper controller opens the fingers. The later
-`background_open_gripper.wait()` blocks before the grasp transition, and
-`grasp_box()` runs after that segment so the fingers close once the arm has
-reached the object. If a dictionary key does not match any segment transition,
-`execute_segments` returns `False` before running any action or trajectory.
 
 ## Executing the segments
 
@@ -161,15 +190,11 @@ execute_segments(
     segments, configs, times,
     joint_names=[f"fr3_joint{i}" for i in range(1, 8)],
     joint_indices=list(range(7)),
-    pre_actions_by_transition=pre_actions_by_transition,
-    post_actions_by_transition=post_actions_by_transition,
 )
 ```
 
-`close_gripper()` is only a setup step to make the overlapping opening visible
-in Gazebo. During execution you should see the fingers open while the arm
-starts the approach, then the plan waits before grasping, closes on the box,
-carries it to the goal, opens again, and retreats.
+You should see the fingers open, the arm descend, the fingers close on the
+box, the arm carry the box to the goal, the fingers open, and the arm retreat.
 
 `reset_box_pose()` detaches the simulated box if needed and places it back at
 the planned start pose before execution.
