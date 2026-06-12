@@ -106,7 +106,7 @@ The scene should now appear in RViz2.
 ```python
 v(q_init)
 ```
-Use v(config) to display a configuration on rviz2 like is done with viser. 
+Use v(config) to display a configuration on rviz2 like is done with viser.
 
 ## Visualizing a path
 
