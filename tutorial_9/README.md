@@ -116,9 +116,9 @@ action to one chosen occurrence.
 
 ```python
 pre_actions_by_transition = {
-    APPROACH_TRANSITION: background_open_gripper.start,
+    APPROACH_TRANSITION: [background_open_gripper.start],
     GRASP_TRANSITION: [background_open_gripper.wait, grasp_box],
-    RELEASE_TRANSITION: release_box,
+    RELEASE_TRANSITION: [release_box],
 }
 post_actions_by_transition = {}
 ```
