@@ -48,8 +48,8 @@ make hpp-gepetto-viewer_extra_flags="\
 
 export the package path
 
-```
-export ROS_PACKAGE_PATH=/home/user/devel/src/:$ROS_PACKAGE_PATH
+```bash
+export ROS_PACKAGE_PATH=/home/user/devel/src/:/opt/openrobots/share/:$ROS_PACKAGE_PATH
 ```
 
 ## Initializing the viewer

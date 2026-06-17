@@ -1,11 +1,14 @@
 import numpy as np
 from pinocchio import SE3, neutral
 from pyhpp.constraints import ComparisonType, ComparisonTypes, LockedJoint
-from pyhpp.manipulation import Device, Graph, ManipulationPlanner, Problem, urdf
+from pyhpp.manipulation import (
+    Device,
+    Graph,
+    ManipulationPlanner,
+    Problem,
+    urdf,
+)
 from pyhpp.manipulation.constraint_graph_factory import ConstraintGraphFactory
-from pyhpp.manipulation import RandomShortcut
-from pyhpp.core import PathOptimizer
-from pyhpp_rviz import RVizVisualizer as Viewer
 
 robot = Device("tuto")
 
