@@ -75,13 +75,12 @@ install(DIRECTORY meshes DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(
-    FILES tutorial_6/controllers.yaml
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/tutorial_6
-)
-
-install(
     FILES tutorial_7/controllers.yaml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/tutorial_7
+)
+install(
+    FILES tutorial_8/controllers.yaml
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/tutorial_8
 )
 
 install(

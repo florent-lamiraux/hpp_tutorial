@@ -1,96 +1,137 @@
-import time
-
 import numpy as np
-import rclpy
-from pinocchio import SE3
-from pyhpp.core import BiRRTPlanner, Problem, RandomShortcut, SimpleTimeParameterization
-from pyhpp.pinocchio import Device, urdf
-from pyhpp_viser import Viewer
-from rclpy.node import Node
-from sensor_msgs.msg import JointState
-
-ARM_JOINT_NAMES = [f"fr3_joint{i}" for i in range(1, 8)]
-FINGER_OPEN = [0.035, 0.035]
-
-
-def read_initial_configuration(timeout_sec=5.0):
-    if not rclpy.ok():
-        rclpy.init()
-
-    node = Node("tutorial_6_initial_configuration")
-    joint_states = []
-    node.create_subscription(JointState, "/joint_states", joint_states.append, 1)
-    deadline = time.monotonic() + timeout_sec
-    try:
-        while not joint_states and time.monotonic() < deadline:
-            rclpy.spin_once(node, timeout_sec=0.1)
-
-        if not joint_states:
-            raise RuntimeError("No message received on /joint_states.")
-
-        joint_state = joint_states[-1]
-        positions = dict(zip(joint_state.name, joint_state.position))
-        missing = [name for name in ARM_JOINT_NAMES if name not in positions]
-        if missing:
-            raise RuntimeError(f"Missing joints in /joint_states: {missing}")
-
-        return np.array([*(positions[name] for name in ARM_JOINT_NAMES), *FINGER_OPEN])
-    finally:
-        node.destroy_node()
-
-
-def display():
-    v = Viewer(robot)
-    v.initViewer(open=False, loadModel=True)
-    v.setProblem(problem)
-    return v
-
-
-# use v = display() to create a Viewer instance.
+from pinocchio import SE3, neutral
+from pyhpp.constraints import ComparisonType, ComparisonTypes, LockedJoint
+from pyhpp.manipulation import (
+    Device,
+    Graph,
+    ManipulationPlanner,
+    Problem,
+    urdf,
+)
+from pyhpp.manipulation.constraint_graph_factory import ConstraintGraphFactory
 
 robot = Device("tuto")
 
-# Load the Franka FR3 robot
-urdf_filename = "package://hpp_tutorial/urdf/fr3.urdf"
-srdf_filename = "package://hpp_tutorial/srdf/fr3.srdf"
-urdf.loadModel(robot, 0, "fr3", "anchor", urdf_filename, srdf_filename, SE3.Identity())
 
-# Configuration: 7 arm joints + 2 finger joints = 9 DOF
-# Fingers are kept open (0.035 m)
-q_init = read_initial_configuration()
+urdf_filename = "package://example-robot-data/robots/panda_description/urdf/panda.urdf"
+srdf_filename = "package://hpp_tutorial/srdf/panda.srdf"
+urdf.loadModel(
+    robot, 0, "panda", "anchor", urdf_filename, srdf_filename, SE3.Identity()
+)
 
-# Goal: a different arm configuration
-q_goal = np.array([1.0, -1.2, 0.5, -2.0, -0.5, 2.0, 0.3, 0.035, 0.035])
 
-# Plan a path
+urdf_filename = "package://hpp_tutorial/urdf/ground.urdf"
+srdf_filename = "package://hpp_tutorial/srdf/ground.srdf"
+urdf.loadModel(
+    robot, 0, "ground", "anchor", urdf_filename, srdf_filename, SE3.Identity()
+)
+
+urdf_filename = "package://hpp_tutorial/urdf/box.urdf"
+srdf_filename = "package://hpp_tutorial/srdf/box.srdf"
+urdf.loadModel(
+    robot, 0, "box", "freeflyer", urdf_filename, srdf_filename, SE3.Identity()
+)
+
+
+robot.setJointBounds(
+    "box/root_joint",
+    [
+        -1.5,
+        1.5,
+        -1.5,
+        1.5,
+        -0.2,
+        1.5,
+        -float("Inf"),
+        float("Inf"),
+        -float("Inf"),
+        float("Inf"),
+        -float("Inf"),
+        float("Inf"),
+        -float("Inf"),
+        float("Inf"),
+    ],
+)
+
+
+q = neutral(robot.model())
+q[-2:] = [0.035, 0.035]
+q[9:12] = [0.4, -0.2, 0.025]
+
+
 problem = Problem(robot)
+graph = Graph("robot", robot, problem)
+factory = ConstraintGraphFactory(graph)
+
+graph.maxIterations(40)
+graph.errorThreshold(1e-5)
+
+factory.setGrippers(["panda/gripper"])
+objects = ["box"]
+handles_per_object = [["box/handle"]]
+contacts_per_object = [["box/surface"]]
+factory.setObjects(objects, handles_per_object, contacts_per_object)
+factory.environmentContacts(["ground/surface"])
+factory.generate()
+
+cts = ComparisonTypes()
+cts[:] = [ComparisonType.EqualToZero]
+locked_fingers = []
+for i in range(2):
+    joint_name = f"panda/panda_finger_joint{i + 1}"
+    lj = LockedJoint(robot, joint_name, np.array([0.035]), cts)
+    locked_fingers.append(lj)
+
+graph.addNumericalConstraintsToGraph(locked_fingers)
+graph.initialize()
+
+
+q_init = np.array(
+    [
+        0.0,
+        0.0,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        0.035,
+        0.035,
+        0.4,
+        -0.2,
+        0.0251,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]
+)
+q_goal = np.array(
+    [
+        0.0,
+        0.0,
+        0.0,
+        -0.5,
+        0.0,
+        0.5,
+        0.0,
+        0.035,
+        0.035,
+        0.4,
+        0.2,
+        0.0251,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]
+)
+
 problem.initConfig(q_init)
 problem.addGoalConfig(q_goal)
+problem.constraintGraph(graph)
 
-planner = BiRRTPlanner(problem)
-planner.maxIterations(2000)
 
-print("Solving...")
-try:
-    p = planner.solve()
-except Exception as exc:
-    raise RuntimeError(
-        "BiRRT failed to find a path. Try running the script again "
-        "(randomized planner) or increase maxIterations."
-    ) from exc
-print(f"Path found, length: {p.length():.3f}")
-
-# Optimize
-optimizer = RandomShortcut(problem)
-p_opt = optimizer.optimize(p)
-print(f"Optimized path length: {p_opt.length():.3f}")
-
-# Time-parameterize for execution
-stp = SimpleTimeParameterization(problem)
-stp.order = 2
-stp.safety = 0.95
-stp.maxAcceleration = 1.0
-p_timed = stp.optimize(p_opt)
-print(f"Trajectory duration: {p_timed.length():.3f} s")
-print()
-print("Path ready. Follow the README to extract waypoints and send to Gazebo.")
+manipulation_planner = ManipulationPlanner(problem)
+manipulation_planner.maxIterations(500)
+path = manipulation_planner.solve()

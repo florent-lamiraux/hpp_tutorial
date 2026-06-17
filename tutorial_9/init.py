@@ -3,7 +3,10 @@ import time
 import numpy as np
 import rclpy
 from geometry_msgs.msg import Pose
-from hpp_exec import segments_from_graph
+from hpp_exec import (
+    segments_from_graph,
+    send_trajectory,
+)
 from pinocchio import SE3
 from pyhpp.constraints import ComparisonType, ComparisonTypes, LockedJoint
 from pyhpp.core import RandomShortcut, SimpleTimeParameterization
@@ -182,12 +185,19 @@ stp.maxAcceleration = 1.0
 p_timed = stp.optimize(p_opt)
 print(f"Trajectory duration: {p_timed.length():.3f} s")
 
+print("Timed path ready for visualization and execution.")
+print()
+print("To visualize:")
+print("  v = display()")
+print("  v.loadPath(p_timed)")
+print()
+
 configs, times, segments = segments_from_graph(p_timed, graph)
 
 if not rclpy.ok():
     rclpy.init()
 
-gazebo_node = Node("tutorial_7_box_controller")
+gazebo_node = Node("tutorial_8_box_controller")
 attach_pub = gazebo_node.create_publisher(Empty, "/box/attach", 1)
 detach_pub = gazebo_node.create_publisher(Empty, "/box/detach", 1)
 pose_client = gazebo_node.create_client(SetEntityPose, "/world/empty/set_pose")
@@ -238,3 +248,29 @@ def reset_box_pose(xyz=BOX_INITIAL_POSITION):
         f"Reset box pose to x={xyz[0]:.3f}, y={xyz[1]:.3f}, z={xyz[2]:.3f}"
     )
     return True
+
+
+def open_gripper():
+    return send_trajectory(
+        [np.array([0.0]), np.array([0.035])],
+        [0.0, 0.5],
+        joint_names=GRIPPER_JOINT_NAMES,
+        controller_topic="/gripper_controller/follow_joint_trajectory",
+    )
+
+
+def close_gripper():
+    return send_trajectory(
+        [np.array([0.035]), np.array([0.0])],
+        [0.0, 0.5],
+        joint_names=GRIPPER_JOINT_NAMES,
+        controller_topic="/gripper_controller/follow_joint_trajectory",
+    )
+
+
+def grasp_box():
+    return attach_box() and close_gripper()
+
+
+def release_box():
+    return open_gripper() and detach_box()

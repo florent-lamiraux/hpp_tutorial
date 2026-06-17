@@ -24,6 +24,17 @@ RUN apt-get update -y \
     ros-jazzy-ros2controlcli \
     python3-colcon-common-extensions
 
+# RVIZ2 dependencies + Compilation dependencies for rviz plugins
+RUN apt-get update -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -qqy \
+        ros-jazzy-rviz-common \
+        ros-jazzy-rviz-rendering \
+        ros-jazzy-rviz2 \
+        ros-jazzy-pluginlib \
+        ros-jazzy-ament-cmake \
+        ros-jazzy-ament-lint-auto \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Gazebo Harmonic + ROS2 bridge
 RUN apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -qqy \
     ros-jazzy-gz-sim-vendor \
