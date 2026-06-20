@@ -23,8 +23,14 @@
               ./script
               ./src
               ./srdf
+              ./tutorial_1
+              ./tutorial_2
+              ./tutorial_3
+              ./tutorial_4
+              ./tutorial_4
               ./tutorial_6
               ./tutorial_7
+              ./tutorial_8
               ./urdf
             ];
           };
