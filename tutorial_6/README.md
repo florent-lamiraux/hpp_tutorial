@@ -32,18 +32,12 @@ cd ../../..
 
 ## Compiling the HPP RViz2 plugins
 
-On your first `make all` from tutorial 1, the RViz2 plugin sources were fetched but not
-compiled. Rebuild `hpp-gepetto-viewer` with the RViz2 flag enabled:
+On your first `make all` from tutorial 1, the RViz2 plugin sources were notcompiled.
+Build `hpp-rviz`:
 
 ```
 cd src
-make hpp-gepetto-viewer_extra_flags="\
-        -DINSTALL_DOCUMENTATION=OFF     \
-        -DUSE_HPP_PYTHON=ON             \
-        -DPYTHON_STANDARD_LAYOUT=ON     \
-        -DBUILD_HPP_RVIZ_PKGS=ON"       \
-        hpp-gepetto-viewer.very-clean   \
-    && make hpp-gepetto-viewer.install
+make hpp-rviz.install
 ```
 
 export the package path
@@ -64,6 +58,8 @@ The script is identical to tutorial 2 up to the computation of path `p`
 The only difference is that it uses `RVizVisualizer` instead of `viser Viewer`.
 
 ```python
+from pyhpp_rviz import RVizVisualizer as Viewer
+
 v = Viewer()
 v.initViewer(robot=robot)
 
@@ -119,7 +115,7 @@ will appear at the bottom of the screen.
 Load a path from the Python terminal:
 
 ```python
-v.loadPath(p1)
+v.loadPath(path)
 ```
 
 The panel lets you slide through the path parameter to inspect any intermediate configuration.
@@ -127,7 +123,7 @@ The panel lets you slide through the path parameter to inspect any intermediate 
 To display the spatial trace of a frame along the path, use:
 
 ```python
-v.displayPath(p1, target_frame="panda/gripper")
+v.displayPath(path, target_frame="panda/gripper")
 ```
 
 You can also trigger this from RViz2 by entering the frame name directly in the
