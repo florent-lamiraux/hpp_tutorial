@@ -84,6 +84,11 @@ hpp-exec_branch=${HPP_VERSION}
 hpp-exec_repository=${HPP_REPO}
 hpp-exec_extra_flags=${PYTHON_FLAGS}
 
+hpp-rviz_branch=${HPP_VERSION}
+hpp-rviz_repository=${HPP_REPO}
+hpp-rviz_extra_flags=${HPP_EXTRA_FLAGS}
+
+
 # }}}
 ##################################
 # {{{ Packages for toppra
@@ -133,6 +138,7 @@ hpp-gepetto-viewer.configure.dep: hpp-gepetto-viewer.checkout python-venv hpp-py
 toppra.configure.dep: toppra.checkout
 hpp-toppra.configure.dep: hpp-toppra.checkout toppra.install
 hpp-exec.configure.dep: hpp-exec.checkout
+hpp-rviz.configure.dep: hpp-rviz.checkout
 
 # }}}
 ##################################
