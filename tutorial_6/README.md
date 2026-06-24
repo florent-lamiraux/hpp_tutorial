@@ -8,7 +8,7 @@ Having completed [tutorial 2](../tutorial_2/README.md).
 
 This tutorial shows how to set up an RViz2 visualization for HPP using the `RVizVisualizer`
 from `pyhpp_rviz`. Unlike the web-based viewer used in tutorials 2–5, this visualizer
-communicates over ROS 2 topics and displays the robot, paths, and waypoints directly inside
+communicates over ROS 2 topics and displays the robot, paths, and landmarks directly inside
 RViz2.
 
 ## Setting up the simulation
@@ -132,29 +132,29 @@ DisplayTrajectory panel.
 ![Control of the view](figures/trajectory_panel_up.png)
 
 
-## Adding waypoints
+## Adding landmarks
 
-Add the **Waypoint** tool from the RViz2 toolbar (installed with the HPP RViz2 plugins).
-Add the **Waypoint** display to visualize the waypoints in the scene.
+Add the **Landmark** tool from the RViz2 toolbar (installed with the HPP RViz2 plugins).
+Add the **Landmark** display to visualize the landmarks in the scene.
 
-Waypoints can be placed in three ways:
+Landmarks can be placed in three ways:
 
-- **Interactively**: select the Waypoint tool in the toolbar, then click in the 3D view.
-  Drag the waypoint with the interact tool for moving it or
-  Right-click a waypoint marker and choose *Edit position* to adjust it numerically with the interact tool too
+- **Interactively**: select the Landmark tool in the toolbar, then click in the 3D view.
+  Drag the landmark with the interact tool for moving it or
+  Right-click a landmark marker and choose *Edit position* to adjust it numerically with the interact tool too
 
 - **From a named frame** (Python):
   ```python
-  v.addWaypointFromFrame("panda/gripper")
+  v.addLandmarkFromFrame("panda/gripper", "first landmark")
   ```
-  This publishes the current pose of the given frame as a waypoint.
+  This publishes the current pose of the given frame as a landmark.
 
 - **From explicit coordinates** (Python):
   ```python
-  v.addWaypoint(xyz=[0.8, 0.0, 1.0], quat_xyzw=[0.0, 0.0, 0.0, 1.0])
+  v.addLandmark(xyz=[0.8, 0.0, 1.0], quat_xyzw=[0.0, 0.0, 0.0, 1.0], "landmark")
   ```
 
-![Alt Text](figures/waypoint.gif)
+![Alt Text](figures/landmark.gif)
 ## Summary of viewer methods
 
 | Method | Description |
@@ -162,8 +162,8 @@ Waypoints can be placed in three ways:
 | `v(q)` | Display configuration `q` |
 | `v.loadPath(p)` | Register path `p` for trajectory control |
 | `v.displayPath(p, target_frame=...)` | Publish the spatial trace of a frame along `p` |
-| `v.addWaypointFromFrame(frame)` | Publish current pose of `frame` as a waypoint |
-| `v.addWaypoint(xyz, quat_xyzw)` | Publish an explicit pose as a waypoint |
+| `v.addLandmarkFromFrame(frame)` | Publish current pose of `frame` as a landmark |
+| `v.addLandmark(xyz, quat_xyzw)` | Publish an explicit pose as a landmark |
 | `v.setProblem(problem)` | Register problem for graph viewer |
 | `v.setGraph(graph)` | Register constraint graph for graph viewer |
 | `v.launch_graph_viewer()` | Open the constraint graph viewer (React app) |
