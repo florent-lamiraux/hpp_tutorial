@@ -8,6 +8,8 @@ Panels:
         - /Status1
         - /TF1/Frames1
         - /TF1/Tree1
+        - /Landmark1
+        - /Landmark1/Landmarks1
       Splitter Ratio: 0.727011501789093
     Tree Height: 853
   - Class: rviz_common/Selection
@@ -370,13 +372,13 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /hpp_path
       Value: true
-    - Class: LandMark
+    - Class: Landmark
       Enable Transparency: true
       Enabled: true
-      Interactive Markers Namespace: /hpp_LandMark_server
-      LandMarks:
+      Interactive Markers Namespace: /hpp_landmark_server
+      Landmarks:
         {}
-      Name: LandMark
+      Name: Landmark
       Show Axes: true
       Show Descriptions: true
       Show Visual Aids: false
@@ -420,7 +422,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /clicked_point
-    - Class: LandMark
+    - Class: Landmark
   Transformation:
     Current:
       Class: rviz_default_plugins/TF
@@ -443,10 +445,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6504091024398804
+      Pitch: 0.7804096937179565
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.648533821105957
+      Yaw: 2.0635249614715576
     Saved: ~
 Window Geometry:
   Displays:

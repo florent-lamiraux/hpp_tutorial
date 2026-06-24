@@ -1,17 +1,11 @@
 import numpy as np
-from pinocchio import SE3, neutral
+import pyhpp.manipulation.urdf.bindings as urdf
+from pinocchio.pinocchio_pywrap_default import SE3, neutral
 from pyhpp.constraints import ComparisonType, ComparisonTypes, LockedJoint
-from pyhpp.manipulation import (
-    Device,
-    Graph,
-    ManipulationPlanner,
-    Problem,
-    urdf,
-)
+from pyhpp.manipulation import Device, Graph, ManipulationPlanner, Problem
 from pyhpp.manipulation.constraint_graph_factory import ConstraintGraphFactory
 
 robot = Device("tuto")
-
 
 urdf_filename = "package://example-robot-data/robots/panda_description/urdf/panda.urdf"
 srdf_filename = "package://hpp_tutorial/srdf/panda.srdf"
