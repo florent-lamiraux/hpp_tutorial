@@ -1,0 +1,9 @@
+[hpp-exec]
+url = "github:humanoid-path-planner"
+
+[hpp-gepetto-viewer]
+url = "github:humanoid-path-planner"
+
+[hpp-tutorial]
+src_deps = ["hpp-exec", "hpp-gepetto-viewer"]
+url = "."
