@@ -1,5 +1,26 @@
-[tool.ruff]
-extend-exclude = ["cmake"]
+[build-system]
+build-backend = "cmeel"
+requires = [
+  "cmeel[build]",
+  "example-robot-data[build]",
+  "hpp-gepetto-viewer[build]",
+  "hpp-manipulation[build]"
+]
+
+[project]
+dependencies = [
+  "example-robot-data",
+  "hpp-gepetto-viewer",
+  "hpp-manipulation"
+]
+description = "Tutorial for Humanoid path planner platform"
+license = "BSD-2-Clause"
+name = "hpp-tutorial"
+version = "9.0.0"
+
+[tool.cmeel]
+has-binaries = false
+has-sitelib = false
 
 [tool.ruff.lint]
 extend-select = ["I", "NPY", "RUF", "UP", "W"]
