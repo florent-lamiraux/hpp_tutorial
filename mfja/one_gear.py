@@ -1,8 +1,11 @@
 import numpy as np
 from pinocchio import SE3, neutral
-from pyhpp.core import ConfigProjector
-from pyhpp.manipulation import (Device, Graph, Problem, ManipulationPlanner, urdf)
+from pyhpp.constraints import (ComparisonType, ComparisonTypes, Implicit, Position)
+from pyhpp.core import (ConfigProjector, Discretized, Progressive, RandomShortcut)
+from pyhpp.manipulation import (Device, Graph, GraphPathValidation,
+                                Problem, ManipulationPlanner, SplineGradientBased_bezier3, urdf)
 from pyhpp.manipulation.constraint_graph_factory import ConstraintGraphFactory
+from pyhpp_toppra import Toppra
 from pyhpp_viser import Viewer
 
 
@@ -42,6 +45,9 @@ robot.setJointBounds("gear_42/root_joint", [-1., 1.,
     -0.2, 1.5,])
 
 problem = Problem(robot)
+problem.pathValidation(GraphPathValidation(Progressive(robot, .001)))
+problem.pathValidationFactory(GraphPathValidation(Progressive(robot, .001)))
+
 graph = Graph("robot", robot, problem)
 factory = ConstraintGraphFactory(graph)
 graph.maxIterations(40)
@@ -56,6 +62,38 @@ factory.environmentContacts(["gear_plate/top"])
 factory.setPossibleGrasps({"staubli/tool0_gripper": ["gear_42/stud"],
                            "gear_support/gear_42": ["gear_42/gear_support"]})
 factory.generate()
+# Force linear motion when placing gear_42 on support
+h = robot.handles()["gear_42/gear_support"]
+f = Position("vertical gear_42", robot, h.getParentJointId(), h.localPosition, SE3.Identity(),
+             [True, True, False])
+cts = ComparisonTypes()
+cts[:] = [ComparisonType.Equality, ComparisonType.Equality]
+vertical_gear_42 = Implicit(f, cts, [True, True])
+transition = graph.getTransition("gear_support/gear_42 > gear_42/gear_support | 0-0_12")
+graph.addNumericalConstraintsToTransition(transition, [vertical_gear_42])
+transition = graph.getTransition("gear_support/gear_42 < gear_42/gear_support | 0-0:1-1_21")
+graph.addNumericalConstraintsToTransition(transition, [vertical_gear_42])
+
+# Deactive collision checking between gripper and gear_42 when grasped
+for tr in [
+        "staubli/tool0_gripper > gear_42/stud | f_12",
+        "staubli/tool0_gripper < gear_42/stud | 0-0_21",
+        "staubli/tool0_gripper > gear_42/stud | f_23",
+        "staubli/tool0_gripper < gear_42/stud | 0-0_32",
+        "staubli/tool0_gripper > gear_42/stud | f_34",
+        "staubli/tool0_gripper < gear_42/stud | 0-0_43",
+        "Loop | 0-0",
+        "gear_support/gear_42 > gear_42/gear_support | 0-0_01",
+        "gear_support/gear_42 < gear_42/gear_support | 0-0:1-1_10",
+        "gear_support/gear_42 > gear_42/gear_support | 0-0_12",
+        "gear_support/gear_42 < gear_42/gear_support | 0-0:1-1_21",
+        "staubli/tool0_gripper < gear_42/stud | 0-0:1-1_21",
+        "staubli/tool0_gripper > gear_42/stud | 1-1_12"
+        ]:
+    transition = graph.getTransition(tr)
+    graph.setSecurityMarginForTransition(transition, "staubli/joint_6", "gear_42/root_joint",
+                                         float("-inf"))
+
 graph.initialize()
 
 q = neutral(robot.model())
@@ -84,3 +122,18 @@ problem.constraintGraph(graph)
 manipulationPlanner = ManipulationPlanner(problem)
 manipulationPlanner.maxIterations(1000)
 p = manipulationPlanner.solve()
+
+# Optimize the path
+opt1 = RandomShortcut(problem)
+opt1.maxIterations(100)
+p1 = opt1.optimize(p)
+
+opt2 = SplineGradientBased_bezier3(problem)
+p2 = opt2.optimize(p1)
+
+toppra = Toppra(problem)
+toppra.velocityScale = 0.5
+toppra.N = 100
+toppra.selectJoints([f"staubli/joint_{i}" for i in range(1,7)])
+toppra.accelerationLimits = np.array(6 * [0.5])
+p3 = toppra.optimize(p2)
