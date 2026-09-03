@@ -53,14 +53,14 @@ factory = ConstraintGraphFactory(graph)
 graph.maxIterations(40)
 graph.errorThreshold(1e-5)
 
-factory.setGrippers(["staubli/tool0_gripper", "gear_support/gear_42"])
+factory.setGrippers(["staubli/tool0_gripper", "gear_support/gear_42_1"])
 objects = ["gear_42"]
 handlesPerObject = [["gear_42/stud", "gear_42/gear_support"]]
 contactsPerObject = [["gear_42/bottom"]]
 factory.setObjects(objects, handlesPerObject, contactsPerObject)
 factory.environmentContacts(["gear_plate/top"])
 factory.setPossibleGrasps({"staubli/tool0_gripper": ["gear_42/stud"],
-                           "gear_support/gear_42": ["gear_42/gear_support"]})
+                           "gear_support/gear_42_1": ["gear_42/gear_support"]})
 factory.generate()
 # Force linear motion when placing gear_42 on support
 h = robot.handles()["gear_42/gear_support"]
@@ -69,9 +69,9 @@ f = Position("vertical gear_42", robot, h.getParentJointId(), h.localPosition, S
 cts = ComparisonTypes()
 cts[:] = [ComparisonType.Equality, ComparisonType.Equality]
 vertical_gear_42 = Implicit(f, cts, [True, True])
-transition = graph.getTransition("gear_support/gear_42 > gear_42/gear_support | 0-0_12")
+transition = graph.getTransition("gear_support/gear_42_1 > gear_42/gear_support | 0-0_12")
 graph.addNumericalConstraintsToTransition(transition, [vertical_gear_42])
-transition = graph.getTransition("gear_support/gear_42 < gear_42/gear_support | 0-0:1-1_21")
+transition = graph.getTransition("gear_support/gear_42_1 < gear_42/gear_support | 0-0:1-1_21")
 graph.addNumericalConstraintsToTransition(transition, [vertical_gear_42])
 
 # Deactive collision checking between gripper and gear_42 when grasped
@@ -83,10 +83,10 @@ for tr in [
         "staubli/tool0_gripper > gear_42/stud | f_34",
         "staubli/tool0_gripper < gear_42/stud | 0-0_43",
         "Loop | 0-0",
-        "gear_support/gear_42 > gear_42/gear_support | 0-0_01",
-        "gear_support/gear_42 < gear_42/gear_support | 0-0:1-1_10",
-        "gear_support/gear_42 > gear_42/gear_support | 0-0_12",
-        "gear_support/gear_42 < gear_42/gear_support | 0-0:1-1_21",
+        "gear_support/gear_42_1 > gear_42/gear_support | 0-0_01",
+        "gear_support/gear_42_1 < gear_42/gear_support | 0-0:1-1_10",
+        "gear_support/gear_42_1 > gear_42/gear_support | 0-0_12",
+        "gear_support/gear_42_1 < gear_42/gear_support | 0-0:1-1_21",
         "staubli/tool0_gripper < gear_42/stud | 0-0:1-1_21",
         "staubli/tool0_gripper > gear_42/stud | 1-1_12"
         ]:
@@ -106,11 +106,11 @@ cp = ConfigProjector(robot, "solver", 1e-5, 40)
 cp.add(grasp, 0)
 q1, status = cp.solver().solve(q)
 
-# Build a configuration where gear_42 is placed on gripper gear_support/gear_42
+# Build a configuration where gear_42 is placed on gripper gear_support/gear_42_1
 
-g = robot.grippers()["gear_support/gear_42"]
+g = robot.grippers()["gear_support/gear_42_1"]
 h = robot.handles()["gear_42/gear_support"]
-grasp = h.createGrasp(g, "gear_support/gear_42 grasps gear_42/gear_support")
+grasp = h.createGrasp(g, "gear_support/gear_42_1 grasps gear_42/gear_support")
 cp = ConfigProjector(robot, "solver", 1e-5, 40)
 cp.add(grasp, 0)
 q2, status = cp.solver().solve(q)
@@ -125,15 +125,12 @@ p = manipulationPlanner.solve()
 
 # Optimize the path
 opt1 = RandomShortcut(problem)
-opt1.maxIterations(100)
+opt1.maxIterations(1000)
 p1 = opt1.optimize(p)
-
-opt2 = SplineGradientBased_bezier3(problem)
-p2 = opt2.optimize(p1)
 
 toppra = Toppra(problem)
 toppra.velocityScale = 0.5
 toppra.N = 100
 toppra.selectJoints([f"staubli/joint_{i}" for i in range(1,7)])
 toppra.accelerationLimits = np.array(6 * [0.5])
-p3 = toppra.optimize(p2)
+p2 = toppra.optimize(p1)
