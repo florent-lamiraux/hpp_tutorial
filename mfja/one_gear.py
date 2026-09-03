@@ -1,6 +1,6 @@
 import numpy as np
 from pinocchio import SE3, neutral
-from pyhpp.constraints import (ComparisonType, ComparisonTypes, Implicit, Position)
+from pyhpp.constraints import (ComparisonType, ComparisonTypes, Implicit, Transformation)
 from pyhpp.core import (ConfigProjector, Discretized, Progressive, RandomShortcut)
 from pyhpp.manipulation import (Device, Graph, GraphPathValidation,
                                 Problem, ManipulationPlanner, SplineGradientBased_bezier3, urdf)
@@ -64,11 +64,11 @@ factory.setPossibleGrasps({"staubli/tool0_gripper": ["gear_42/stud"],
 factory.generate()
 # Force linear motion when placing gear_42 on support
 h = robot.handles()["gear_42/gear_support"]
-f = Position("vertical gear_42", robot, h.getParentJointId(), h.localPosition, SE3.Identity(),
-             [True, True, False])
+f = Transformation("vertical gear_42", robot, h.getParentJointId(), h.localPosition,
+                   SE3.Identity(), [True, True, False, True, True, True])
 cts = ComparisonTypes()
 cts[:] = [ComparisonType.Equality, ComparisonType.Equality]
-vertical_gear_42 = Implicit(f, cts, [True, True])
+vertical_gear_42 = Implicit(f, cts, [True, True, True, True, True])
 transition = graph.getTransition("gear_support/gear_42_1 > gear_42/gear_support | 0-0_12")
 graph.addNumericalConstraintsToTransition(transition, [vertical_gear_42])
 transition = graph.getTransition("gear_support/gear_42_1 < gear_42/gear_support | 0-0:1-1_21")
