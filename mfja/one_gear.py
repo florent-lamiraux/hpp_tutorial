@@ -47,6 +47,7 @@ robot.setJointBounds("gear_42/root_joint", [-1., 1.,
 problem = Problem(robot)
 problem.pathValidation(GraphPathValidation(Progressive(robot, .001)))
 problem.pathValidationFactory(GraphPathValidation(Progressive(robot, .001)))
+problem.pathProjector(ProgressiveProjector(problem.distance(), problem.steeringMethod(), 0.2))
 
 graph = Graph("robot", robot, problem)
 factory = ConstraintGraphFactory(graph)
@@ -67,7 +68,8 @@ h = robot.handles()["gear_42/gear_support"]
 f = Transformation("vertical gear_42", robot, h.getParentJointId(), h.localPosition,
                    SE3.Identity(), [True, True, False, True, True, True])
 cts = ComparisonTypes()
-cts[:] = [ComparisonType.Equality, ComparisonType.Equality]
+cts[:] = [ComparisonType.Equality, ComparisonType.Equality, ComparisonType.Equality,
+          ComparisonType.Equality, ComparisonType.Equality]
 vertical_gear_42 = Implicit(f, cts, [True, True, True, True, True])
 transition = graph.getTransition("gear_support/gear_42_1 > gear_42/gear_support | 0-0_12")
 graph.addNumericalConstraintsToTransition(transition, [vertical_gear_42])
