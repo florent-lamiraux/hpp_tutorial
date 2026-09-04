@@ -21,7 +21,7 @@ urdf.loadModel(robot, 0, "staubli", "anchor", urdf_filename, srdf_filename, SE3.
 urdf_filename = "package://mfja_3rd_floor_description/urdf/gear_plate.urdf"
 srdf_filename = "package://mfja_3rd_floor_description/srdf/gear_plate.srdf"
 pose = SE3.Identity()
-pose.translation = np.array([.6, .15, 0.])
+pose.translation = np.array([.52453, -.1815, 0.])
 
 urdf.loadModel(robot, 0, "gear_plate", "anchor", urdf_filename, srdf_filename,
                pose)
@@ -29,7 +29,7 @@ urdf.loadModel(robot, 0, "gear_plate", "anchor", urdf_filename, srdf_filename,
 # Load gear support
 urdf_filename = "package://mfja_3rd_floor_description/urdf/gear_support.urdf"
 srdf_filename = "package://mfja_3rd_floor_description/srdf/gear_support.srdf"
-pose.translation = np.array([.6, -.15, 0.])
+pose.translation = np.array([.58753, .039, 0.])
 
 urdf.loadModel(robot, 0, "gear_support", "anchor", urdf_filename, srdf_filename,
                pose)
