@@ -1,9 +1,11 @@
 import numpy as np
 from pinocchio import SE3, neutral
 from pyhpp.constraints import (ComparisonType, ComparisonTypes, Implicit, Transformation)
-from pyhpp.core import (ConfigProjector, Discretized, Progressive, RandomShortcut)
+from pyhpp.core import (ConfigProjector, Discretized, ProgressiveProjector, Progressive,
+                        RandomShortcut)
 from pyhpp.manipulation import (Device, Graph, GraphPathValidation,
-                                Problem, ManipulationPlanner, SplineGradientBased_bezier3, urdf)
+                                Problem, ManipulationPlanner, SplineGradientBased_bezier3,
+                                StatesPathFinder, urdf)
 from pyhpp.manipulation.constraint_graph_factory import ConstraintGraphFactory
 from pyhpp_toppra import Toppra
 from pyhpp_viser import Viewer
@@ -122,6 +124,7 @@ problem.initConfig(q1)
 problem.addGoalConfig(q2)
 problem.constraintGraph(graph)
 manipulationPlanner = ManipulationPlanner(problem)
+manipulationPlanner = StatesPathFinder(problem)
 manipulationPlanner.maxIterations(1000)
 p = manipulationPlanner.solve()
 
